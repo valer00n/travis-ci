@@ -1,4 +1,11 @@
 GIT
+  remote: https://github.com/dmathieu/rpm.git
+  revision: 7af0982d4a3898be5a156aaa12fad027fb4330c2
+  branch: binds
+  specs:
+    newrelic_rpm (3.1.0)
+
+GIT
   remote: https://github.com/pengwynn/octokit.git
   revision: 463e08caa4f940045f7f9e2003bd9dcd427b13c0
   ref: 463e08caa4f940045f7f
@@ -152,7 +159,6 @@ GEM
     multi_json (1.0.3)
     multi_xml (0.2.2)
     multipart-post (1.1.2)
-    newrelic_rpm (3.1.0)
     nokogiri (1.5.0)
     nokogiri (1.5.0-java)
     oa-core (0.2.6)
@@ -291,7 +297,7 @@ DEPENDENCIES
   minitest
   minitest_tu_shim
   mocha
-  newrelic_rpm (~> 3.1.0)
+  newrelic_rpm!
   oa-oauth (~> 0.2.6)
   octokit!
   pg (~> 0.11.0)
