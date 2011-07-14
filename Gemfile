@@ -32,11 +32,9 @@ gem 'jruby-openssl',     :platforms => :jruby
 
 #gem 'newrelic_rpm',         '~> 3.1.0'
 # New Relic master is broken with rails 3.1.
-# Use the fixed version until this is applied on master.
-# See https://github.com/newrelic/rpm/pull/28
+# Use the edge version until a new stable one is released.
 gem 'newrelic_rpm', 
-  :git => 'https://github.com/dmathieu/rpm.git',
-  :branch => 'binds'
+  :git => 'https://github.com/newrelic/rpm.git'
 
 
 group :test do

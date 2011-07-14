@@ -1,7 +1,6 @@
 GIT
-  remote: https://github.com/dmathieu/rpm.git
-  revision: 7af0982d4a3898be5a156aaa12fad027fb4330c2
-  branch: binds
+  remote: https://github.com/newrelic/rpm.git
+  revision: c265ab00cf38d113696ef815040c673d091f58b4
   specs:
     newrelic_rpm (3.1.0)
 
