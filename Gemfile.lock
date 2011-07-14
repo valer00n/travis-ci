@@ -1,8 +1,9 @@
 GIT
   remote: https://github.com/newrelic/rpm.git
-  revision: c265ab00cf38d113696ef815040c673d091f58b4
+  revision: 8d56c3a0078a9f0f231d9583f1a118e232e609c8
+  branch: 3.1.1_dev
   specs:
-    newrelic_rpm (3.1.0)
+    newrelic_rpm (3.1.1.beta3)
 
 GIT
   remote: https://github.com/pengwynn/octokit.git
