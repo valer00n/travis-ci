@@ -9,7 +9,10 @@
 #       'slug' => 'rails/rails', 'queue' => 'rails'
 #     },
 #     {
-#       'target' => 'erlang', 'queue' => 'erlang'
+#       'target' => 'erlang', 'language' => 'erlang', 'queue' => 'erlang'
+#     },
+#     {
+#       'target' => 'clojure', 'queue' => 'erlang'
 #     }
 #   ]
 # }
@@ -48,8 +51,11 @@ module Travis
       end
 
       def use_queue?(build, config)
-        slug, target = config['slug'], config['target']
-        (build.repository.slug == slug) || (build.config && build.config['target'] && build.config['target'] == target)
+        slug, target, language = config['slug'], config['target'], config['language']
+
+        (build.repository.slug == slug) ||
+          (build.config && build.config['target'] && build.config['target'] == target) ||
+          (build.config && build.config['language'] && build.config['language'] == language)
       end
 
       def setup_custom_queues

@@ -14,8 +14,9 @@ class TravisWorkerTest < ActiveSupport::TestCase
 
     @queues_hash = {
       'queues' => [
-        { 'slug' => 'rails/rails', 'queue' => 'rails' },
-        { 'target' => 'erlang', 'queue' => 'erlang' }
+        { 'queue' => 'rails',   'slug' => 'rails/rails' },
+        { 'queue' => 'erlang',  'target' => 'erlang' },
+        { 'queue' => 'clojure', 'target' => 'clojure', 'language' => 'clojure' }
       ]
     }
 
@@ -69,6 +70,37 @@ class TravisWorkerTest < ActiveSupport::TestCase
     @build.config['target'] = 'erlang'
 
     assert_equal Travis::Worker::Erlang, Travis::Worker.worker_for(@build)
+  end
+
+  test "#worker_for : the clojure build queue is choosen based on target" do
+    @build.config ||= {}
+    @build.config['target'] = 'clojure'
+
+    assert_equal Travis::Worker::Clojure, Travis::Worker.worker_for(@build)
+  end
+
+  test "#worker_for : the clojure build queue is choosen based on language" do
+    @build.config ||= {}
+    @build.config['language'] = 'clojure'
+
+    assert_equal Travis::Worker::Clojure, Travis::Worker.worker_for(@build)
+  end
+
+  test "#worker_for : the erlang build queue is choosen based on target (target take presedence over language)" do
+    @build.config ||= {}
+    @build.config['target'] = 'erlang'
+    @build.config['language'] = 'clojure'
+
+    assert_equal Travis::Worker::Erlang, Travis::Worker.worker_for(@build)
+  end
+
+  test "#worker_for : the default build queue is choosen if slug, language, or target do not match" do
+    @build.config ||= {}
+    @build.config['slug'] = 'foo/bar'
+    @build.config['target'] = 'baz'
+    @build.config['language'] = 'fbb'
+
+    assert_equal Travis::Worker, Travis::Worker.worker_for(@build)
   end
 
   test "#to_s : custom workers return Travis::Worker" do
