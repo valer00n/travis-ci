@@ -6,7 +6,7 @@ class Build < ActiveRecord::Base
 
   include Branches, Events, Json, Matrix, Notifications, Sources::Github
 
-  ENV_KEYS = ['rvm', 'gemfile', 'env']
+  ENV_KEYS = ['rvm', 'gemfile', 'env', 'otp_release']
 
   belongs_to :repository
   belongs_to :parent, :class_name => 'Build', :foreign_key => :parent_id
@@ -33,6 +33,11 @@ class Build < ActiveRecord::Base
     def exclude?(attributes)
       sources.any? { |source| source.exclude?(attributes) }
     end
+
+    def keys_for(hash)
+      ENV_KEYS.select { |key| hash.keys.map(&:to_s).include?(key) }
+    end
+
   end
 
   def config=(config)
@@ -73,6 +78,16 @@ class Build < ActiveRecord::Base
 
   def color
     pending? ? '' : passed? ? 'green' : 'red'
+  end
+
+  # Return only the child builds whose config matches against as passed hash
+  # e.g. build.matrix_for(rvm: '1.8.7', env: 'DB=postgresql')
+  def matrix_for(hash)
+    matrix.select do |build|
+      Build.keys_for(hash).map do |key|
+        build.config[key] == hash[key]
+      end.inject(:&)
+    end
   end
 
   protected
