@@ -5,8 +5,6 @@
 // the compiled file.
 //
 //= require jquery
-//= require jquery_ujs
-//= require vendor/underscore
 //= require_tree ./vendor
 //= require travis
 //= require_tree ./lib
