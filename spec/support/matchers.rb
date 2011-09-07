@@ -44,6 +44,18 @@ RSpec::Matchers.define :post_webhooks_on do |event, object, options|
   end
 end
 
+RSpec::Matchers.define :post_campfire_on do |event, object, options|
+  match do |dispatch|
+    options[:to].map! do |scheme|
+      data = Travis::Notifications::Campfire::ConfigurationBuilder.extract_data(scheme)
+      Travis::Notifications::Campfire::ConfigurationBuilder.build_url(data)
+    end
+
+    post_webhooks_on(event, object, options)
+  end
+end
+
+
 RSpec::Matchers.define :serve_status_image do |status|
   match do |request|
     path = "#{Rails.public_path}/images/status/#{status}.png"

@@ -4,6 +4,7 @@ module Travis
     autoload :Irc,     'travis/notifications/irc'
     autoload :Pusher,  'travis/notifications/pusher'
     autoload :Webhook, 'travis/notifications/webhook'
+    autoload :Campfire,'travis/notifications/campfire'
     autoload :Worker,  'travis/notifications/worker'
 
     class << self
