@@ -59,15 +59,17 @@ describe Build, 'notifications', ActiveSupport::TestCase do
     end
   end
 
-  describe :send_webhook_notifications? do
-    it 'returns true if the build configuration specifies webhooks' do
-      build = Factory(:build, :config => { :notifications => { :webhooks => ['http://evome.fr/notifications', 'http://example.com/'] } })
-      build.send_webhook_notifications?.should be_true
-    end
+  [:webhook, :campfire].each do |notification|
+    describe :"send_#{notification}_notifications?" do
+      it 'returns true if the build configuration specifies webhooks' do
+        build = Factory(:build, :config => { :notifications => { notification => ['http://example.com/'] } })
+        build.send(:"send_#{notification}_notifications?").should be_true
+      end
 
-    it 'returns false if the build configuration does not specify any webhooks' do
-      build = Factory(:build)
-      build.send_webhook_notifications?.should be_false
+      it 'returns false if the build configuration does not specify any webhooks' do
+        build = Factory(:build)
+        build.send(:"send_#{notification}_notifications?").should be_false
+      end
     end
   end
 

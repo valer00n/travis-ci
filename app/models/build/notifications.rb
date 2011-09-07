@@ -8,8 +8,10 @@ class Build
       @email_recipients ||= notifications[:email] || notifications[:recipients] || default_email_recipients # TODO deprecate recipients
     end
 
-    def send_webhook_notifications?
-      !!notifications[:webhooks]
+    [:webhook, :campfire].each do |notification|
+      define_method "send_#{notification}_notifications?" do
+        !!notifications[notification]
+      end
     end
 
     def webhooks
