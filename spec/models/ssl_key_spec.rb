@@ -4,6 +4,31 @@ describe SslKey do
   let(:repository) { Factory(:repository, :name => "ssl_key") }
   let(:ssl_key) { repository.get_or_create_config_key }
 
+  it "should have ssl keys" do
+    SslKey::VALID_KEYS.should_not be_empty
+  end
+
+  describe "encrypt" do
+    it "should encrypt something" do
+      ssl_key.encrypt("hello").should_not be_nil
+      ssl_key.encrypt("hello").should_not eql("hello")
+    end
+
+    it "should be decryptable" do
+      encrypted = ssl_key.encrypt("hello")
+      ssl_key.decrypt(encrypted).should eql("hello")
+    end
+  end
+
+  describe "decrypt" do
+    it "should decrypt something" do
+      encrypted_string = ssl_key.encrypt("hello world")
+      ssl_key.decrypt(encrypted_string).should_not be_nil
+      ssl_key.decrypt(encrypted_string).should_not eql("hello")
+    end
+  end
+
+
   describe "key type" do
     it "should not have the same key_type for one repository" do
       key = SslKey.new(:key_type => ssl_key.key_type, :repository_id => repository.id)
