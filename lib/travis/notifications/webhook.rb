@@ -19,17 +19,23 @@ module Travis
       end
 
       def notify(event, build, *args)
-        send_webhook_notifications(build) if build.send_webhook_notifications?
+        send_notifications(build) if build.send_webhook_notifications?
       end
 
       protected
 
-        def send_webhook_notifications(build)
+        def send_notifications(build)
           build.webhooks.each do |webhook|
-            self.class.http_client.post(webhook) do |req|
+            prepare_notification(webhook) do |req|
               req.body = { :payload => self.class.payload_for(build).to_json }
               req.headers['Authorization'] = authorization(build)
             end
+          end
+        end
+
+        def prepare_notification(url, &block)
+          self.class.http_client.post(url) do |req|
+            block.call(req)
           end
         end
 
