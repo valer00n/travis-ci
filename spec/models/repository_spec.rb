@@ -70,5 +70,33 @@ describe Repository do
       assert_equal nil, repository.last_build_status('foo' => 'bar')
     end
   end
+
+  describe "keys" do
+    let(:repository) { Factory(:repository) }
+
+    describe "config" do
+      SslKey::VALID_KEYS.each do |name, id|
+        it "should have the method get_or_create_#{name}_key" do
+          repository.should respond_to(:"get_or_create_#{name}_key")
+        end
+
+        it "should create a new key" do
+          repository.keys.where(:key_type => id).delete_all
+          lambda do
+            key = repository.send(:"get_or_create_#{name}_key")
+            key.key_type.should eql(id)
+          end.should change(SslKey, :count).by(1)
+        end
+
+        it "should retrieve the existing key" do
+          key_1 = repository.send(:"get_or_create_#{name}_key")
+          lambda do
+            key_2 = repository.send(:"get_or_create_#{name}_key")
+            key_1.should eql(key_2)
+          end.should change(SslKey, :count).by(0)
+        end
+      end
+    end
+  end
 end
 

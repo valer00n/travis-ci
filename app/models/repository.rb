@@ -1,5 +1,6 @@
 require 'uri'
 require 'core_ext/hash/compact'
+require 'ssl_key' # Required to access SslKey in the class definition
 
 class Repository < ActiveRecord::Base
   include ServiceHooks
@@ -7,6 +8,7 @@ class Repository < ActiveRecord::Base
   BRANCH_KEY = :branch
 
   has_many :requests, :dependent => :delete_all
+  has_many :keys, :class_name => 'SslKey'
   has_many :builds, :dependent => :delete_all do
     def last_status_on(params)
       last_finished_on_branch(params[:branch]).try(:matrix_status, params)
@@ -43,6 +45,13 @@ class Repository < ActiveRecord::Base
       else
         self.where(params.slice(:name, :owner_name)).first
       end
+    end
+  end
+
+  SslKey::VALID_KEYS.each do |name, id|
+    define_method "get_or_create_#{name}_key" do
+      @ssl_keys ||= []
+      @ssl_keys[id] ||= keys.find_or_create_by_key_type(id)
     end
   end
 
