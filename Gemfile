@@ -54,8 +54,6 @@ group :test do
   gem 'fakeredis',       '~> 0.2.0'
   gem 'webmock'
 
-  gem 'jasmine'
-  gem 'jasmine-core', '~> 1.1.beta'
   gem 'jasmine-headless-webkit'
 
   platforms :ruby_18 do
