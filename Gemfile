@@ -50,7 +50,6 @@ group :test do
   gem 'jasmine'
   gem 'capybara',        '~> 1.0.0'
   gem 'database_cleaner'
-  gem 'factory_girl',    '~> 2.0.3'
   gem 'mocha'
   gem 'fakeredis',       '~> 0.2.0'
   gem 'webmock'
@@ -64,6 +63,8 @@ group :test do
 end
 
 group :development, :test do
+  gem 'factory_girl',    '~> 2.0.3'
+  gem 'forgery', "~> 0.5.0"
   gem 'rspec-rails', '~> 2.6.1'
 
   platforms :mri_18 do
