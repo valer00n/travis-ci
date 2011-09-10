@@ -23,7 +23,6 @@ Travis.Build = Travis.Record.extend(Travis.Helpers.Urls, Travis.Helpers.Common, 
   update: function(attrs) {
     if('status' in attrs) attrs.result = attrs.status
     if('matrix' in attrs) attrs.matrix = this._joinMatrixAttributes(attrs.matrix);
-    console.log(attrs)
     this._super(attrs);
   },
 
@@ -103,6 +102,11 @@ Travis.Build = Travis.Record.extend(Travis.Helpers.Urls, Travis.Helpers.Common, 
     return this.get('matrix').objectAt(0);
   }.property('build'),
 
+  updateTimes: function() {
+    this.notifyPropertyChange('startedAt');
+    this.notifyPropertyChange('finishedAt');
+  },
+
   // need to join given attributes with existing attributes because SC.Record.toMany
   // does not seem to allow partial updates, i.e. would remove existing attributes?
   _joinMatrixAttributes: function(attrs) {
@@ -118,6 +122,6 @@ Travis.Build.reopenClass({
   resource: 'builds',
 
   byRepositoryId: function(id, parameters) {
-    return this.all({ url: '/repositories/%@/builds.json?parent_id='.fmt(id), parentId: null, orderBy: 'number DESC' })
+    return this.all({ url: '/repositories/%@/builds.json?parent_id='.fmt(id), repositoryId: id, parentId: null, orderBy: 'number DESC' })
   },
 });
