@@ -1,20 +1,13 @@
-Travis.Models.ServiceHook = Backbone.Model.extend({
-  initialize: function() {
-    Backbone.Model.prototype.initialize.apply(this, arguments);
-    _.bindAll(this, 'url');
+Travis.ServiceHook = Travis.Record.extend({
+  primaryKey: 'uid',
+
+  toggle: function() {
+    this.writeAttribute('active', !this.get('active'));
+    this.commitRecord({ owner: this.get('owner'), name: this.get('name') });
   },
-  url: function() {
-    return '/profile/service_hooks'
-  }
 });
 
-Travis.Collections.ServiceHooks = Backbone.Collection.extend({
-  model: Travis.Models.ServiceHook,
-  initialize: function(models) {
-    Backbone.Collection.prototype.initialize.apply(this, arguments);
-    _.bindAll(this, 'url');
-  },
-  url: function() {
-    return '/profile/service_hooks' + Utils.queryString(this.options);
-  }
+Travis.ServiceHook.reopenClass({
+  resource: 'profile/service_hooks'
 });
+

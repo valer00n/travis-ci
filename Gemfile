@@ -21,8 +21,10 @@ gem 'rabl',              '~> 0.3.0'
 # app
 gem 'devise',            '~> 1.4.2'
 gem 'oa-oauth',          '~> 0.2.6'
-gem 'simple_states',     '0.0.7'
+gem 'simple_states',     '0.0.9'
 gem 'unobtrusive_flash', '~> 0.0.2'
+gem 'premailer',         '~> 1.7.1'
+gem 'nokogiri',          '~> 1.5.0'
 
 # apis
 # current oa-oauth release depends on faraday 0.6.1, current octokit on faraday ~> 0.7.3, :git source for oa-oauth confuses heroku :(
@@ -42,17 +44,19 @@ group :assets do
   gem 'sass-rails',        '~> 3.1.0'
   gem 'coffee-rails',      '~> 3.1.0'
   gem 'uglifier'
-  gem 'jquery-rails'
   gem 'compass',           '0.12.alpha.0'
 end
 
 group :test do
-  gem 'capybara',        '~> 1.1.0'
+  gem 'jasmine'
+  gem 'capybara',        '~> 1.0.0'
   gem 'database_cleaner'
-  gem 'factory_girl',    '~> 2.0.3'
   gem 'mocha'
   gem 'fakeredis',       '~> 0.2.0'
   gem 'webmock'
+
+  # gotta wait for QT 4.7
+  # gem 'jasmine-headless-webkit'
 
   platforms :ruby_18 do
     gem 'minitest'
@@ -61,6 +65,8 @@ group :test do
 end
 
 group :development, :test do
+  gem 'factory_girl',    '~> 2.0.3'
+  gem 'forgery', "~> 0.5.0"
   gem 'rspec-rails', '~> 2.6.1'
 
   platforms :mri_18 do
@@ -75,3 +81,4 @@ group :development, :test do
     gem 'ruby-debug19', :platforms => :mri_19
   end
 end
+

@@ -1,14 +1,3 @@
-class HandlebarsTemplate < Tilt::Template
-  def self.default_mime_type
-    "application/javascript"
-  end
+require 'sprockets/sc_handlebars'
 
-  def prepare
-  end
-
-  def evaluate(scope, locals, &block)
-    "Handlebars.compile(#{data.to_json})"
-  end
-end
-
-Rails.application.assets.register_engine '.hbs', HandlebarsTemplate
+Rails.application.assets.register_engine 'hjs', ScHandlebars

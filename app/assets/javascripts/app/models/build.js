@@ -1,157 +1,134 @@
-Travis.Models.Build = Travis.Models.Base.extend({
-  initialize: function(attributes, options) {
-    Travis.Models.Base.prototype.initialize.apply(this, arguments);
-    _.bindAll(this, 'update', 'updateMatrix', 'url', 'commit', 'color', 'duration', 'eta', 'toJSON');
-    _.extend(this, options);
+Travis.Build = Travis.Record.extend(Travis.Helpers.Urls, Travis.Helpers.Common, {
+  repositoryId:   SC.Record.attr(Number, { key: 'repository_id' }),
+  parentId:       SC.Record.attr(Number, { key: 'parent_id' }),
+  config:         SC.Record.attr(Object),
+  state:          SC.Record.attr(String),
+  number:         SC.Record.attr(Number),
+  commit:         SC.Record.attr(String),
+  branch:         SC.Record.attr(String),
+  message:        SC.Record.attr(String),
+  result:         SC.Record.attr(Number, { key: 'status' }), // status is reserved by SC
+  startedAt:      SC.Record.attr(String, { key: 'started_at' }), // use DateTime?
+  finishedAt:     SC.Record.attr(String, { key: 'finished_at' }),
+  committedAt:    SC.Record.attr(String, { key: 'committed_at' }),
+  committerName:  SC.Record.attr(String, { key: 'committer_name' }),
+  committerEmail: SC.Record.attr(String, { key: 'committer_email' }),
+  authorName:     SC.Record.attr(String, { key: 'author_name' }),
+  authorEmail:    SC.Record.attr(String, { key: 'author_email' }),
+  compareUrl:     SC.Record.attr(String, { key: 'compare_url' }),
+  log:            SC.Record.attr(String, { defaultValue: '' }),
 
-    this.repository = this.repository;
-    if(!this.repository && this.collection) this.repository = this.collection.repository;
-    if(!this.repository && Travis.app) this.repository = Travis.app.repositories.get(this.get('repository_id'));
+  matrix: SC.Record.toMany('Travis.Build', { nested: true }), // TODO should be Travis.Test!
 
-    if(this.attributes._log) {
-      this.appendLog(this.attributes._log);
-      delete this.attributes._log;
-    }
-    if(this.attributes.matrix) {
-      this.updateMatrix(this.attributes);
-    }
-    if(this.collection) {
-      this.bind('change', function(build) { this.collection.trigger('change', this); });
-      this.bind('configured', function(build) { this.collection.trigger('configured', build); });
-    }
+  parent: function() {
+    //console.log('updating parent on build ' + this.get('id'));
+    return this.get('parentId') ? Travis.Build.find(this.get('parentId')) : null;
+  }.property('parentId', 'status').cacheable(),
+
+  repository: function() {
+    //console.log('updating repository on build ' + this.get('id'));
+    return Travis.Repository.find(this.get('repositoryId'));
+  }.property('repositoryId', 'status').cacheable(),
+
+  build: function() {
+    return this.get('matrix').objectAt(0);
+  }.property('build', 'status').cacheable(),
+
+  update: function(attrs) {
+    if('status' in attrs) attrs.result = attrs.status
+    if('matrix' in attrs) attrs.matrix = this._joinMatrixAttributes(attrs.matrix);
+    this._super(attrs);
   },
-  update: function(attributes) {
-    this.set(attributes);
-    if(this.attributes._log) {
-      this.appendLog(this.attributes._log);
-      delete this.attributes._log;
-    }
-    if(attributes.matrix) {
-      this.updateMatrix(attributes);
-    }
-    return this;
+
+  appendLog: function(log) {
+    this.set('log', this.get('log') + log);
   },
-  updateMatrix: function(attributes) {
-    if(this.matrix) {
-      _.each(attributes.matrix, function(attributes) { this.matrix.update(attributes) }.bind(this));
-    } else {
-      this.matrix = new Travis.Collections.Builds(attributes.matrix, { repository: this.repository });
-      this.matrix.parent = this;
-      this.matrix.each(function(build) { build.repository = this.repository }.bind(this)); // wtf
-      this.matrix.bind('select', function(build) { this.trigger('select', build); }.bind(this))
-      this.trigger('configured', this);
-    }
-    delete attributes.matrix;
+
+  updateTimes: function() {
+    this.notifyPropertyChange('startedAt');
+    this.notifyPropertyChange('finishedAt');
   },
-  parent: function(callback) {
-    if(this.get('parent_id')) {
-      this.collection.parent.collection.getOrFetch(this.get('parent_id'), callback);
-    }
-  },
-  appendLog: function(chars) {
-    this.attributes.log = (this.attributes.log || '') + chars;
-    this.trigger('append:log', chars);
-  },
-  url: function() {
-    return this.get('parent_id') ? '/tasks/' + this.id : '/builds/' + this.id;
-  },
-  commit: function() {
-    var commit = this.get('commit');
-    return commit ? commit.slice(0, 7) : '';
-  },
+
+  isMatrix: function() {
+    //console.log('updating isMatrix on build ' + this.get('id'));
+    return this.getPath('matrix.length') > 1;
+  }.property('matrix.status').cacheable(),
+
   color: function() {
-    var status = this.get('status');
-    return status == 0 ? 'green' : status == 1 ? 'red' : null;
-  },
+    //console.log('updating color on build ' + this.get('id'));
+    return this.colorForStatus(this.get('result'));
+  }.property('status', 'result').cacheable(),
+
   duration: function() {
-    return Utils.duration(this.get('started_at'), this.get('finished_at'));
-  },
-  eta: function() {
-    var startedAt  = this.get('started_at');
-    var finishedAt = this.get('finished_at');
-    var lastDuration = this.repository.get('last_duration');
-    if(!finishedAt && lastDuration) {
-      var timestamp = new Date(startedAt).getTime();
-      var eta = new Date((timestamp + lastDuration));
-      return eta.toISOString();
-    }
-  },
-  toJSON: function() {
-    var json = _.extend(Backbone.Model.prototype.toJSON.apply(this), {
-      duration: this.duration(),
-      commit: this.commit(),
-      eta: this.eta(),
-      color: this.color(),
-      repository: this.repository.toJSON(),
+    //console.log('updating duration on build ' + this.get('id'));
+    return this.durationFrom(this.get('startedAt'), this.get('finishedAt'));
+  }.property('startedAt', 'finishedAt').cacheable(),
+
+  configKeys: function() {
+    return $.map($.keys($.only(this.get('config'), 'rvm', 'gemfile', 'env', 'otp_release')), function(key) { return $.camelize(key) });
+  }.property('config').cacheable(),
+
+  configValues: function() {
+    return $.values($.only(this.get('config'), 'rvm', 'gemfile', 'env', 'otp_release'));
+  }.property('config').cacheable(),
+
+  // see https://github.com/sproutcore/sproutcore20/issues/160
+  configKeyObjects: function() {
+    //console.log('updating configKeyObjects on build ' + this.get('id'));
+    return $.map(this.get('configKeys'), function(key) { return SC.Object.create({ key: key }) });
+  }.property('config').cacheable(),
+
+  configValueObjects: function() {
+    //console.log('updating configValueObjects on build ' + this.get('id'));
+    return $.map(this.get('configValues'), function(value) { return SC.Object.create({ value: value }) });
+  }.property('config').cacheable(),
+
+  // TODO the following display logic all seems to belong to a controller or helper module
+
+  formattedCommit: function() {
+    return (this.get('commit') || '').substr(0, 7) + (this.get('branch') ? ' (%@)'.fmt(this.get('branch')) : '');
+  }.property('commit', 'branch').cacheable(),
+
+  formattedDuration: function() {
+    return this.readableTime(this.get('duration'));
+  }.property('status', 'duration').cacheable(),
+
+  formattedFinishedAt: function() {
+    return this.timeAgoInWords(this.get('finishedAt')) || '-';
+  }.property('status', 'finishedAt').cacheable(),
+
+  formattedConfig: function() {
+    if(this.get('isMatrix')) return;
+    var config = $.only(this.get('config'), 'rvm', 'gemfile', 'env');
+    var values = $.map(config, function(value, key) { return '%@: %@'.fmt($.camelize(key), value.join ? value.join(', ') : value); });
+    return values.length == 0 ? '-' : values.join(', ');
+  }.property('config').cacheable(),
+
+  formattedLog: function() {
+    var log = this.get('parentId') ? this.get('log') : this.getPath('matrix.firstObject.log');
+    return log ? Travis.Log.filter(log) : '';
+  }.property('parentId', 'log', 'matrix.firstObject.log').cacheable(),
+
+  formattedCompareUrl: function() {
+    var parts = (this.get('compare_url') || '').split('/');
+    return parts[parts.length - 1];
+  }.property('compareUrl').cacheable(),
+
+  // need to join given attributes with existing attributes because SC.Record.toMany
+  // does not seem to allow partial updates, i.e. would remove existing attributes?
+  _joinMatrixAttributes: function(attrs) {
+    var _this = this;
+    return $.each(attrs, function(ix, build) {
+      if(build.status) build.result = build.status;
+      attrs[ix] = $.extend(_this.get('matrix').objectAt(ix).get('attributes') || {}, build);
     });
-    if(this.matrix) {
-      json['matrix'] = this.matrix.toJSON();
-    }
-    if(this.get('config')) {
-      var humanReadableConfig = {}
-      _.map(this.get('config'), function(v, k) {
-        if (_.include(Travis.DISPLAYED_KEYS, k)) {
-          humanReadableConfig[k] = v
-        }
-      })
-      json['config_table'] = _.map(humanReadableConfig, function(value, key) { return { key: key, value: value } } );
-      json['config'] = _.map(humanReadableConfig, function(value, key) { return key + ': ' + value; } ).join(', ');
-    }
-    return json;
   }
 });
 
-Travis.Collections.Builds = Travis.Collections.Base.extend({
-  model: Travis.Models.Build,
-  initialize: function(models, options) {
-    Travis.Collections.Base.prototype.initialize.apply(this, arguments);
-    _.bindAll(this, 'url', 'dimensions', 'update');
-    _.extend(this, options);
-    this.args = this.args || {};
+Travis.Build.reopenClass({
+  resource: 'builds',
+
+  byRepositoryId: function(id, parameters) {
+    return this.all({ url: '/repositories/%@/builds.json?parent_id='.fmt(id), repositoryId: id, parentId: null, orderBy: 'number DESC' })
   },
-  _add: function(model, options) {
-    Travis.Collections.Base.prototype._add.apply(this, arguments);
-    if(Travis.app) Travis.app.builds._add(model);
-  },
-  update: function(attributes) {
-    if(attributes) {
-      var build = this.get(attributes.id);
-      build ? build.update(attributes) : this.add(new Travis.Models.Build(attributes, { repository: this.repository }));
-    }
-  },
-  page: function(page) {
-    if (page) {
-      this.args.page = page;
-    }
-    return this.args.page || 1;
-  },
-  url: function() {
-    return '/repositories/' + this.repository.id + '/builds' + Utils.queryString(this.args);
-  },
-  dimensions: function() {
-    return this.models[0] ?
-      _.select(_(this.models[0].get('config')).keys(), function(key) {
-        return _.include(Travis.DISPLAYED_KEYS, key)
-      }).map(function(key) {
-        return _.capitalize(key)
-      }) : [];
-  },
-  comparator: function(build) {
-    // this sorts matrix child builds below their child builds, i.e. the actual order will be like: 4, 3, 3.1, 3.2, 3.3., 2, 1
-    var number = String(build.get('number'));
-    var fraction = parseInt(number.substr(number.indexOf('.') + 1));
-    return parseInt(number) * 100000 - fraction
-  }
 });
-
-Travis.Collections.AllBuilds = Travis.Collections.Builds.extend({
-  _add: function(model, options) {
-    var cid = model.cid;
-    var collection = model.collection;
-    Travis.Collections.Base.prototype._add.apply(this, arguments);
-    model.collection = collection;
-    model.cid = cid;
-    return this;
-  },
-})
-

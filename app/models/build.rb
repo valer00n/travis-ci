@@ -106,11 +106,11 @@ class Build < ActiveRecord::Base
 
   def human_status_message
     case status_message
-    when "Pending"; "The build is pending."
-    when "Passed"; "The build passed."
-    when "Failed"; "The build failed."
-    when "Fixed"; "The build was fixed."
-    when "Broken"; "The build was broken."
+    when "Pending";       "The build is pending."
+    when "Passed";        "The build passed."
+    when "Failed";        "The build failed."
+    when "Fixed";         "The build was fixed."
+    when "Broken";        "The build was broken."
     when "Still Failing"; "The build is still failing."
     else status_message
     end
@@ -121,7 +121,9 @@ class Build < ActiveRecord::Base
   end
 
   def previous_finished_on_branch
-    Build.on_branch(commit.branch).where("builds.repository_id IN (?) AND finished_at < ?", repository_id, finished_at).limit(1).last
+    Build.on_branch(commit.branch).
+          where("builds.repository_id IN (?) AND builds.id < ?", repository_id, id).
+          descending.limit(1).first
   end
 
   protected

@@ -1,15 +1,30 @@
-Travis.Models.Worker = Backbone.Model.extend({
-  initialize: function(attributes) {
-  }
+Travis.WorkerGroup = SC.Object.extend({
+  init: function() {
+    this.set('workers', []);
+  },
+
+  name: function() {
+    return this.getPath('workers.firstObject.name');
+  }.property(),
+
+  add: function(worker) {
+    this.get('workers').push(worker);
+  },
 });
 
-Travis.Collections.Workers = Backbone.Collection.extend({
-  model: Travis.Models.Worker,
-  url: '/workers',
-  remove: function(element) {
-    Backbone.Collection.prototype.remove.apply(this, [this.get(element.id)]);
-  },
-  comparator: function(worker) {
-    return worker.get('id');
-  }
+Travis.Worker = Travis.Record.extend({
+  id: SC.Record.attr(String, { key: 'id' }),
+
+  name: function() {
+    return this.get('id').split(':')[0];
+  }.property('id'),
+
+  process: function() {
+    return this.get('id').split(':').slice(1).join(':');
+  }.property('id')
 });
+
+Travis.Worker.reopenClass({
+  resource: 'workers'
+});
+

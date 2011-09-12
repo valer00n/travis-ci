@@ -1,3 +1,31 @@
+== Sproutcore
+
++ fix matrix
++ figure out call stack error :/
++ fix tests for new binding pattern
++ fix tests in jasmine-headless-webkit
++ port log parsing
++ fix stats and profile pages
++ port service hooks
++ implement search controller and view
++ hook up pusher events
++ hook up time changes
++ port small stuff like the sidebar toggle
+
+- add tests for controller layer
+- add acceptance tests
+- add service hook specs
+- test task/script to add some workers and jobs to a local redis
+- load json fixtures generated from real server/app data
+- make tests run on travis-ci.org!
+
+- debounce/throttle search keyboard events
+- fix search (does not propagate loaded records to the list)
+
+- try https://github.com/antsa/sassy_noise
+
+== Statemachine
+
 + move Worker to Notification:Worker
 + json for configure tasks
 + make Travis.config a Hashr instance

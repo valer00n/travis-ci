@@ -46,6 +46,9 @@ caption {
   color: #666;
 }
 
+.display {
+  display: block !important;
+}
 .slide-left {
   position: absolute;
   top:150px;
@@ -145,12 +148,12 @@ caption {
   top: 40px;
   width: 400px;
 
-  #search {
+  #search_box {
     height: 90px;
     padding: 30px 20px 0 20px;
     background-color: #e5e8ee;
   }
-  #search input[type=text] {
+  #search_box input[type=text] {
     height: 28px;
     width: 97%;
     padding: 0 0 0 10px;
@@ -162,9 +165,17 @@ caption {
   }
   .tabs {
     margin-top: -29px;
-  }
-  .tabs li:first-child h5 {
-    margin-left: 20px;
+
+    li:first-child h5 {
+      margin-left: 20px;
+    }
+
+    #tab_search {
+      display: none;
+      &.active {
+        display: block;
+      }
+    }
   }
 
   #repositories {
@@ -218,16 +229,16 @@ caption {
 }
 
 #left #repositories li,
-#main .summary .number a,
-#main #matrix td:first-child a,
+#main .build .summary .number a,
+#main #builds td:first-child a,
 #main #builds .build td:first-child a {
   background-image: url(/assets/icons/status.yellow.png);
   padding-left: 20px;
   background-repeat: no-repeat;
 }
 #left #repositories li.green,
-#main .summary.green .number a,
-#main #matrix .green td:first-child a,
+#main .build.green .summary .number a,
+#main #builds .green td:first-child a,
 #main #builds .build.green td:first-child a {
   background-image: url(/assets/icons/status.green.png);
   color: green;
@@ -235,8 +246,8 @@ caption {
   background-repeat: no-repeat;
 }
 #left #repositories li.red,
-#main .summary.red .number a,
-#main #matrix .red td:first-child a,
+#main .build.red .summary .number a,
+#main #builds .red td:first-child a,
 #main #builds .build.red td:first-child a {
   background-image: url(/assets/icons/status.red.png);
   color: #c00;
@@ -257,10 +268,10 @@ caption {
     opacity: .1;
     min-height: 1000px;
   }
-  &.large {
+  &.maximized {
     padding: 60px 100px 30px 440px;
   }
-  .repository {
+  #repository {
     position: relative;
   }
   h3 {
@@ -416,7 +427,7 @@ caption {
       &.highlight {
         background-color: rgba(255,255,255,.5);
       }
-      a.linum {
+      a {
         position: absolute;
         margin-left: -40px;
         cursor: pointer;
@@ -495,10 +506,10 @@ caption {
       background-color: white;
     }
   }
-  #matrix {
+  #builds {
     margin: 20px 0 0 -12px;
   }
-  #matrix caption {
+  #builds caption {
     margin-left: 12px;
     margin-bottom: 8px;
   }
@@ -569,12 +580,24 @@ caption {
     white-space: nowrap;
     overflow: hidden;
     margin: 0;
-    ul.nested {
+
+    h5 {
+      font-size: 13px;
+      font-weight: normal;
+      margin: 0px;
+      cursor: pointer;
+    }
+
+    ul {
       margin-top: 0px;
       margin-bottom: 5px;
       padding-left: 10px;
       display: none;
     }
+    &.open ul {
+      display: block;
+    }
+
     &:hover {
       ul.nested {
         display: block;
@@ -641,18 +664,6 @@ caption {
   border-bottom: 1px solid #ccc;
   overflow: visible;
   @include transition(width .5s ease-out);
-  &.maximized {
-    width: 240px;
-  };
-  &.minimized {
-    width: 0px;
-
-    .inner {
-      .wrapper {
-        display: none;
-      }
-    }
-  }
 
   $slider-border-normal: #f2f4f9;
   $slider-border-light: #999;
@@ -662,20 +673,6 @@ caption {
     border-bottom: 1px solid #ccc;
     background-color: #f2f4f9;
 
-    &.toggled {
-      z-index: 50;
-      .icon {
-        border-color: $slider-border-normal $slider-border-light $slider-border-normal $slider-border-normal;
-        border-width: 5px 5px 5px 0;
-      }
-      &:hover {
-        .icon {
-          border-color: $slider-border-hover $slider-border-light $slider-border-hover $slider-border-hover;
-        }
-      }
-      left: -20px;
-      width: 20px;
-    }
     .icon {
       width: 0;
       height: 0;
@@ -705,6 +702,32 @@ caption {
     .wrapper {
       padding: 20px 20px 20px 10px;
       min-width: 190px;
+    }
+  }
+  &.maximized {
+    width: 240px;
+  };
+  &.minimized {
+    width: 0px;
+
+    .slider {
+      width: 20px;
+      left: -21px;
+      z-index: 50;
+      .icon {
+        border-color: $slider-border-normal $slider-border-light $slider-border-normal $slider-border-normal;
+        border-width: 5px 5px 5px 0;
+      }
+      &:hover {
+        .icon {
+          border-color: $slider-border-hover $slider-border-light $slider-border-hover $slider-border-hover;
+        }
+      }
+    }
+    .inner {
+      .wrapper {
+        display: none;
+      }
     }
   }
 
@@ -867,7 +890,7 @@ ul#tokens {
   @include list-base;
 }
 
-#service_hooks {
+#service_hooks ul {
   @include list-base;
   margin-top: 10px;
   li {
@@ -896,6 +919,7 @@ ul#tokens {
       top: 10px;
       right: 0;
       white-space: nowrap;
+      background: #fff;
       a {
         float: left;
         display: block;
@@ -909,13 +933,13 @@ ul#tokens {
         padding-right: 0;
         background: url('/assets/icons/admin.png') no-repeat 3px 4px;
       }
-      .toggle_enabled {
+      .switch {
         height: 20px;
         width: 80px;
         margin-left: 10px;
         background: url('/assets/off.png') no-repeat;
         cursor: pointer;
-        &.on {
+        &.active {
           background: url('/assets/on.png') no-repeat;
         }
       }
@@ -949,26 +973,31 @@ ul#tokens {
 #github {
   position: absolute;
   z-index: 100;
-  top: 40px;
-  right: -65px;
-  height: 40px;
-  width: 250px;
-  text-decoration: none;
-  @include rotate(45deg);
-  span {
-    position: absolute;
-    left: 0;
+  top: 0px;
+  right: 0px;
+  width: 130px;
+  height: 140px;
+  overflow: hidden;
+
+  a {
+    z-index: 100;
+    display: block;
     width: 250px;
+    margin: 40px 0 0 -50px;
     padding: 3px 0;
+    border-top: 2px solid #ef9f4c;
+    border-bottom: 2px solid #ef9f4c;
+    background: #ef7600;
+
+    color: white;
     text-align: center;
+    text-decoration: none;
     font-size: 13px;
     font-weight: bold;
     letter-spacing: -1px;
     text-shadow: 0 0 10px #522600;
-    border-top: 2px solid #ef9f4c;
-    border-bottom: 2px solid #ef9f4c;
-    color: white;
-    background: #ef7600;
+
+    @include rotate(45deg);
     @include box-shadow(rgba(black, 0.5) 1px 1px 10px, rgba(black, 0.07) 0 0 3px 1px inset);
   }
 }

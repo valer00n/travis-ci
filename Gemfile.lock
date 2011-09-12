@@ -48,7 +48,7 @@ GEM
     arel (2.2.1)
     bcrypt-ruby (3.0.0)
     builder (3.0.0)
-    capybara (1.1.1)
+    capybara (1.0.1)
       mime-types (>= 1.16)
       nokogiri (>= 1.3.3)
       rack (>= 1.0.0)
@@ -72,11 +72,12 @@ GEM
       fssm (>= 0.2.7)
       sass (~> 3.1)
     crack (0.1.8)
+    css_parser (1.1.9)
     data_migrations (0.0.1)
       activerecord
       rake
     database_cleaner (0.6.7)
-    devise (1.4.4)
+    devise (1.4.5)
       bcrypt-ruby (~> 3.0)
       orm_adapter (~> 0.0.3)
       warden (~> 1.0.3)
@@ -94,6 +95,7 @@ GEM
     faraday_middleware (0.6.5)
       faraday (~> 0.6.0)
     ffi (1.0.9)
+    forgery (0.5.0)
     fssm (0.2.7)
     hashie (1.0.0)
     hashr (0.0.14)
@@ -101,10 +103,13 @@ GEM
     hoptoad_notifier (2.4.11)
       activesupport
       builder
+    htmlentities (4.3.0)
     i18n (0.6.0)
-    jquery-rails (1.0.13)
-      railties (~> 3.0)
-      thor (~> 0.14)
+    jasmine (1.0.2.1)
+      json_pure (>= 1.4.3)
+      rack (>= 1.1)
+      rspec (>= 1.3.1)
+      selenium-webdriver (>= 0.1.3)
     json (1.5.4)
     json_pure (1.5.4)
       spruz (~> 0.2.8)
@@ -127,7 +132,7 @@ GEM
     multi_json (1.0.3)
     multi_xml (0.2.2)
     multipart-post (1.1.3)
-    newrelic_rpm (3.1.1)
+    newrelic_rpm (3.1.2)
     nokogiri (1.5.0)
     oa-core (0.2.6)
     oa-oauth (0.2.6)
@@ -144,6 +149,9 @@ GEM
     orm_adapter (0.0.5)
     pg (0.11.0)
     polyglot (0.3.2)
+    premailer (1.7.1)
+      css_parser (>= 1.1.9)
+      htmlentities (>= 4.0.0)
     pusher (0.8.2)
       crack (~> 0.1.0)
       multi_json (~> 1.0)
@@ -234,7 +242,7 @@ GEM
     signature (0.1.2)
       ruby-hmac
     silent-postgres (0.0.8)
-    simple_states (0.0.7)
+    simple_states (0.0.9)
       activesupport
       hashr (~> 0.0.10)
     sinatra (1.2.6)
@@ -275,7 +283,7 @@ PLATFORMS
 
 DEPENDENCIES
   SystemTimer (~> 1.2.3)
-  capybara (~> 1.1.0)
+  capybara (~> 1.0.0)
   clockwork
   coffee-rails (~> 3.1.0)
   compass (= 0.12.alpha.0)
@@ -284,18 +292,21 @@ DEPENDENCIES
   devise (~> 1.4.2)
   factory_girl (~> 2.0.3)
   fakeredis (~> 0.2.0)
+  forgery (~> 0.5.0)
   hashr (~> 0.0.14)
   hoptoad_notifier (~> 2.4.11)
-  jquery-rails
+  jasmine
   jruby-openssl
   json
   minitest
   minitest_tu_shim
   mocha
   newrelic_rpm (~> 3.1.0)
+  nokogiri (~> 1.5.0)
   oa-oauth (~> 0.2.6)
   octokit!
   pg (~> 0.11.0)
+  premailer (~> 1.7.1)
   pusher (~> 0.8.1)
   rabl (~> 0.3.0)
   rails (~> 3.1.0)
@@ -309,7 +320,7 @@ DEPENDENCIES
   ruby-debug19
   sass-rails (~> 3.1.0)
   silent-postgres (~> 0.0.8)
-  simple_states (= 0.0.7)
+  simple_states (= 0.0.9)
   uglifier
   unicorn (~> 4.0.0)
   unobtrusive_flash (~> 0.0.2)

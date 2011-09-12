@@ -1,9 +1,5 @@
-// These are the required files for the Travis frontend, currently a backbone app.
-// The load order is important and has been broken up into individual files
-// to make sure particular js files are loaded first.
-//
-//= require vendor
-//= require templates
+//= require vendor/jquery-1.6.2
+//= require_tree ./vendor
 //= require travis
-//= require lib
-//= require mvc
+//= require_tree ./lib
+//= require_tree ./app
